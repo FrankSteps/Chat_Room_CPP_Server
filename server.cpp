@@ -13,9 +13,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string>
+#include <memory>
 #include "httplib.h"
 
-//Function to discover the local IP (IPv4)
+/*
+*(!) I will use it here in the future 
+
+namespace ray {
+    #include <raylib.h>
+}
+*/
+
+//Function to discover the local IP (IPv4) in string format
 std::string ip_local(){
     struct ifaddrs *ifaddr, *ifa;
     std::string ip = "127.0.0.1"; //defined the default value to IP 
@@ -50,7 +59,7 @@ std::string ip_local(){
     return ip;
 }
 
-//basic server settings
+//basic server settings (and window configuration - in the future)
 int main(){
     httplib::Server server;
 
@@ -61,7 +70,7 @@ int main(){
         auto msg = req.get_param_value("message");
         std::cout << "message: " << msg << '\n';
 
-        res.set_content("<h2>Message received</h2><p>" + msg + "</p><a href='/'>Back</a>", "text/html");
+        res.set_content("<h2>Message received</h2> <p> </p><a href='/'>Back</a>", "text/html");
     });
 
     //messages indicating server operation
