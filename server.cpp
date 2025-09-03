@@ -57,6 +57,13 @@ int main(){
     std::cout << "Loading server\n";
     server.set_mount_point("/", "./server_documents");
 
+    server.Post("/send", [](const httplib::Request& req, httplib::Response& res){
+        auto msg = req.get_param_value("message");
+        std::cout << "message: " << msg << '\n';
+
+        res.set_content("<h2>Message received</h2><p>" + msg + "</p><a href='/'>Back</a>", "text/html");
+    });
+
     //messages indicating server operation
     std::cout << "The local IP of this computer is:" << ip_local() << '\n';
     std::cout << "access from your computer using: http://localhost:8080\n";
