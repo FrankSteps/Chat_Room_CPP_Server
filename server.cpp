@@ -1,83 +1,60 @@
 /*
-    Server developed by: Francisco Passos | Frank Steps
-    
-    Developed in: 03/09/2025
-    Modified in: 03/09/2025
-
-    Learning the httplib library with C++ <3
+    This program is a server settings
 */
 
-//Libraries
-#include <iostream>
-#include <ifaddrs.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string>
-#include <memory>
+//libraries and c++ programs imports
+#include "shared.h"
 #include "httplib.h"
+#include <thread>
 
-/*
-*(!) I will use it here in the future 
+//do you want open window?
+const bool windowOpen = true;
 
-namespace ray {
-    #include <raylib.h>
-}
-*/
-
-//Function to discover the local IP (IPv4) in string format
-std::string ip_local(){
-    struct ifaddrs *ifaddr, *ifa;
-    std::string ip = "127.0.0.1"; //defined the default value to IP 
-
-    //
-    if(getifaddrs(&ifaddr) == -1){
-        perror("getifaddrs");
-        return ip; //return the default value if error
-    }
-
-    //traverse all interfaces ignoring those without an active/valid/existing IP
-    for(ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
-        if (ifa->ifa_addr == nullptr) {
-            continue;
-        }
-        
-        //Just consider IPv4 interfaces; convert binary value to string
-        if(ifa->ifa_addr->sa_family == AF_INET){
-            struct sockaddr_in *sa = (struct sockaddr_in *) ifa->ifa_addr;
-            char buffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &(sa->sin_addr), buffer, INET_ADDRSTRLEN);
-        
-            //return the first valid IP as long as it isn't the default IP
-            if(std::string(buffer) != "127.0.0.1") {
-                ip = buffer;
-                break;
-            }
-        }
-    }
-    //release memory and return the actived interface's IP
-    freeifaddrs(ifaddr);
-    return ip;
+void hashtag() {
+    std::cout << "##########################################################################\n";
 }
 
-//basic server settings (and window configuration - in the future)
-int main(){
+//start settings this server
+int startServer(){
     httplib::Server server;
 
     std::cout << "Loading server\n";
     server.set_mount_point("/", "./server_documents");
 
     server.Post("/send", [](const httplib::Request& req, httplib::Response& res){
+        //requests of site
+        auto user = req.get_param_value("user");
         auto msg = req.get_param_value("message");
-        std::cout << "message: " << msg << '\n';
 
-        res.set_content("<h2>Message received</h2> <p> </p><a href='/'>Back</a>", "text/html");
+        //show user and your message in the prompt
+        std::cout << "user: " << user << " || "<< "message: " << msg << '\n';
+
+        //return cpp to html
+        res.set_content(
+            "<h2>Message received</h2>"
+            "<p>Username: " + user + "</p>"
+            "<a href='/'>Back</a>", "text/html"
+        );
     });
 
+    //init server in a thread
+    std::thread initServer([&server](){
+        server.listen("0.0.0.0", 8080);
+    });
+
+    if (windowOpen) {          
+        initServer.join(); 
+    } else {
+        hashtag();
+        std::cout << "Press Ctrl+C to stop.\n";
+        initServer.join();
+    }
+
     //messages indicating server operation
-    std::cout << "The local IP of this computer is:" << ip_local() << '\n';
+    hashtag();
+    std::cout << "The local IP of this computer is: " << ip_local() << '\n';
     std::cout << "access from your computer using: http://localhost:8080\n";
     std::cout << "access from another device using: http://" << ip_local() << ":8080\n";
 
-    //server started:
-    server.listen("0.0.0.0", 8080);
+    return EXIT_SUCCESS;
 }
