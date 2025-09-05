@@ -6,9 +6,12 @@
 #include "shared.h"
 #include "httplib.h"
 #include <thread>
+#include <vector>
 
 //do you want open window?
 const bool windowOpen = true;
+
+std::vector<std::string> messages; 
 
 void hashtag() {
     std::cout << "##########################################################################\n";
@@ -21,6 +24,7 @@ int startServer(){
     std::cout << "Loading server\n";
     server.set_mount_point("/", "./server_documents");
 
+    //requests
     server.Post("/send", [](const httplib::Request& req, httplib::Response& res){
         //requests of site
         auto user = req.get_param_value("user");
@@ -28,13 +32,26 @@ int startServer(){
 
         //show user and your message in the prompt
         std::cout << "user: " << user << " || "<< "message: " << msg << '\n';
+        
+        //save message
+        messages.push_back(user + ": " + msg);
 
         //return cpp to html
-        res.set_content(
-            "<h2>Message received</h2>"
-            "<p>Username: " + user + "</p>"
-            "<a href='/'>Back</a>", "text/html"
-        );
+        res.set_content("OK", "text/plain");
+    });
+
+    //response
+    server.Get("/messages", [&](const httplib::Request& req, httplib::Response res){
+        std::string json = "[";
+        for(size_t i = 0; i < messages.size(); i++){
+            json += "{\"text\":\"" + messages[i] + "\"}";
+
+            if(i != messages.size()-1) {
+                json += ",";
+            }
+        }
+        json += "]";
+        res.set_content(json, "application/json");
     });
 
     //init server in a thread

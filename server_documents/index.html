@@ -20,17 +20,14 @@
       </div>
     </header>
 
-    <div class="chat">
-        <!-- mensagens vão aqui -->
+    <div id="chat" class="chat">
+
     </div>
 
-    <footer>
-        <form action="/send" method="post" class="chat-form">
-          <textarea class="chat-input" name="message" placeholder="your message" required></textarea>
-          <button class="send-btn" type="submit">send</button>
-        </form>
-    </footer>      
-  </div>
+    <form class="chat-form">
+      <textarea class="chat-input" placeholder="Type a message"></textarea>
+      <button id="submit" type="submit">Send</button>
+    </form>  
 
   <script src="script.js"></script>
 </body>
