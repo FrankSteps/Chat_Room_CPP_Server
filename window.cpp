@@ -13,7 +13,7 @@ void startWindow(){
     ray::InitWindow(720, 480, "Bate-papo C(hat)++");
 
     //icon this program
-    ray::Image icon = ray::LoadImage("server_documents/images/favicon/minecraft.png");
+    ray::Image icon = ray::LoadImage("server_documents/images/icons/icon_user.png");
     ray::SetWindowIcon(icon);
 
     //window configuration with raylib
