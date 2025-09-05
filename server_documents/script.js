@@ -80,6 +80,6 @@ document.querySelector(".chat-form").addEventListener("submit", sendMessage);
 // refresh chat every second
 setInterval(updateMessages, 1000);
 
-// --- Initialize username and attach to form ---
+// --- Initialize ---
 initUser();    
 attachUser();   
