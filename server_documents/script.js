@@ -36,7 +36,7 @@ const updateMessages = () => {
     fetch("/messages")
         .then(res => res.json())
         .then(msgs => {
-            const chat = document.querySelector(".chat-content"); // ou ".chat"
+            const chat = document.querySelector(".chat"); 
             chat.innerHTML = "";
             msgs.forEach(m => {
                 const div = document.createElement("div");
@@ -49,7 +49,7 @@ const updateMessages = () => {
 };
 
 document.querySelector(".chat-form").addEventListener("submit", (e) => {
-    e.preventDefault(); // previne recarregamento da página
+    e.preventDefault();
     const input = document.querySelector(".chat-input");
     const msg = input.value.trim();
     if (!msg) return;
@@ -59,8 +59,8 @@ document.querySelector(".chat-form").addEventListener("submit", (e) => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `user=${encodeURIComponent(getUser())}&message=${encodeURIComponent(msg)}`
     }).then(() => {
-        input.value = "";   // limpa campo
-        updateMessages();   // atualiza chat imediatamente
+        input.value = "";   
+        updateMessages();   
     });
 });
 
