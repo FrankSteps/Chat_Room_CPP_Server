@@ -1,28 +1,27 @@
 /*
     Functional JavaScript
     developed by: Francisco Passos
-    developed in: 04/09/2025
+    devoleped in: 04/09/2025
+
     modified in: 05/09/2025
 */
 
-// Load the JavaScript after the HTML is ready
+//load the Java Script after the HTML is ready
 document.addEventListener("DOMContentLoaded", () => {
-    //------Pure Functions-----
-
-    //pure function: formats an ISO date string into "Month Year"
+    // Format ISO date -> "Month Year"
     const formatMonthYear = (isoDate) => {
         if (!isoDate) return "";
         const date = new Date(isoDate);
         return `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
     };
 
-    //higher-order pure function: returns existing value or calls fallback function
+    //return existing value or call fallback function
     const resolveValue = (existing, askFn) => existing || askFn();
 
-    //pure function: checks if new messages arrived
-    const hasNewMessages = (prevMsgs, newMsgs) => newMsgs.length > prevMsgs.length;
+    //save the atual chat state 
+    let currentMessages = [];
 
-    //pure function: creates DOM elements for messages but does not update DOM itself
+    //render chat messages as <div> elements
     const renderMessages = (msgs, user) =>
         msgs.map(m => {
             const div = document.createElement("div");
@@ -56,14 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return div;
         });
 
-    //-----Impure Functions (have side effects, manipulate DOM, localStorage, network)------
-
-    //localStorage getters (impure: read from storage)
+    //localStorage getters
     const getUser = () => localStorage.getItem("chatUser") || "";
     const getColor = () => localStorage.getItem("favoriteColor") || "";
     const getUserDate = () => localStorage.getItem("chatUserDate") || "";
 
-    //localStorage setters (impure: write to storage)
+    //localStorage setters
     const setUser = (user) => {
         localStorage.setItem("chatUser", user);
         if (!localStorage.getItem("chatUserDate")) {
@@ -72,46 +69,58 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const setColor = (color) => localStorage.setItem("favoriteColor", color);
 
-    //prompt user input (impure: user interaction)
+    //ask user for input (impure: prompt)
     const askUsername = () => prompt("Your username: ");
     const askFavoriteColor = () => prompt("Your favorite color: ");
 
-    //DOM update functions (impure: side effects)
+    //DOM updates
     const displayUsername = (user) => {
         const el = document.getElementById("username");
         if (el) el.innerText = user;
     };
 
+    //update the DOM element with id "favoriteColor" to show the user color
+    //impure function (side effect: changes the DOM)
     const displayColor = (color) => {
         const el = document.getElementById("favoriteColor");
         if (el) el.innerText = color;
     };
 
+    //update the DOM element with id "date" 
+    //(should be combined with formatMonthYear before calling this)
+    //impure function (side effect: changes the DOM)
     const displayDate = (isoDate) => {
         const el = document.getElementById("date");
         if (el) el.innerText = formatMonthYear(isoDate);
     };
 
-    //functional, impure: renders messages and updates the scroll only if new messages exist
+    //check for new messages
+    const hasNewMessages = (prevMsgs, newMsgs) => newMsgs.length > prevMsgs.length;
+
+    //Função funcional para renderizar e atualizar chat
     const displayMessagesFunctional = (prevMsgs, newMsgs, user) => {
         const chat = document.querySelector(".chat");
-        if (!chat) return prevMsgs; // returns previous state if chat does not exist
+        //returns previous state if chat does not exist
+        if (!chat) return prevMsgs; 
 
+        //render messages
         chat.innerHTML = "";
         renderMessages(newMsgs, user).forEach(div => chat.appendChild(div));
 
+        //refreshs the scroll only if there are new messages
         if (hasNewMessages(prevMsgs, newMsgs)) {
-            chat.scrollTop = chat.scrollHeight; // DOM mutation
+            chat.scrollTop = chat.scrollHeight;
         }
 
-        //returns new state (immutable approach)
-        return newMsgs; 
+        //returns the new state (new set of messages)
+        return newMsgs;
     };
 
-    //-----Network / Server Communication (impure: network side effects)-----
+    //server communication
     const fetchMessages = () =>
         fetch("/messages").then(res => res.json());
 
+    //sends a message to the server with the given user and message
     const sendMessage = (user, msg) =>
         fetch("/send", {
             method: "POST",
@@ -119,11 +128,9 @@ document.addEventListener("DOMContentLoaded", () => {
             body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}`
         });
 
-    //-----Orchestration / Initialization-----
-
-    //initialize user and color: resolve values, save, and display (impure)
+    //initialize user and color: resolve, save, and display
     const initUserAndColor = () => {
-        const user = resolveValue(getUser(), askUsername); // higher-order function
+        const user = resolveValue(getUser(), askUsername);
         if (user) {
             setUser(user);
             displayUsername(user);
@@ -137,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    //attach hidden "user" field to form before submit (impure)
+    //attach hidden "user" field to the form before submit
     const attachUserToForm = () => {
         const form = document.querySelector(".chat-form");
         if (!form) return;
@@ -152,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    //handle chat form submit: send message and refresh chat (impure)
+    //handle chat form submit: send message and refresh chat
     const setupChatForm = () => {
         const form = document.querySelector(".chat-form");
         const input = document.querySelector(".chat-input");
@@ -162,23 +169,24 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const msg = input.value.trim();
             if (!msg) return;
-
             sendMessage(getUser(), msg).then(() => {
                 input.value = "";
                 fetchMessages().then(msgs => {
                     currentMessages = displayMessagesFunctional(currentMessages, msgs, getUser());
                 });
             });
+            
         });
     };
     
-    //periodically refresh messages from server (impure: side effect + functional state handling)
+    //periodically refresh messages from server
     const startMessageUpdater = () => {
         setInterval(() => {
             fetchMessages().then(msgs => {
                 currentMessages = displayMessagesFunctional(currentMessages, msgs, getUser());
             });
         }, 1000);
+        
     };
 
     //start
@@ -186,5 +194,4 @@ document.addEventListener("DOMContentLoaded", () => {
     attachUserToForm();
     setupChatForm();
     startMessageUpdater();
-
 });
