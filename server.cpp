@@ -11,8 +11,6 @@
 //do you want open window?
 const bool windowOpen = false;
 
-std::vector<std::string> messages; 
-
 void hashtag() {
     std::cout << "##########################################################################\n";
 }
@@ -42,6 +40,14 @@ std::string escape_json(const std::string& s) {
     return out;
 }
 
+struct infoUser {
+    std::string user;
+    std::string text;
+    std::string color;
+};
+
+std::vector<infoUser> messages; 
+
 //start settings this server
 int startServer(){
     httplib::Server server;
@@ -54,31 +60,38 @@ int startServer(){
         //requests of site
         auto user = req.get_param_value("user");
         auto msg = req.get_param_value("message");
+        auto color = req.get_param_value("color");
 
         //show user and your message in the prompt
-        std::cout << "user: " << user << " || "<< "message: " << msg << '\n';
+        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << '\n';
         
         //save message
-        messages.push_back(user + ": " + msg);
+        //messages.push_back(user + ": " + msg);
+
+        infoUser m;
+        m.user = user;
+        m.text = msg;
+        m.color = color;
+        messages.push_back(m);
 
         //return cpp to html
         res.set_content("OK", "text/plain");
     });
 
-    //response
+    //response - convert to JSON format
     server.Get("/messages", [&](const httplib::Request& req, httplib::Response& res){
         std::string json = "[";
         for(size_t i = 0; i < messages.size(); i++){
-            json += "{\"text\":\"" + escape_json(messages[i]) + "\"}";
-
-            if(i != messages.size()-1) {
-                json += ",";
-            }
+            json += "{";
+            json += "\"user\":\"" + escape_json(messages[i].user) + "\",";
+            json += "\"text\":\"" + escape_json(messages[i].text) + "\",";
+            json += "\"color\":\"" + escape_json(messages[i].color) + "\"";
+            json += "}";
+            if(i != messages.size()-1) json += ",";
         }
         json += "]";
         res.set_content(json, "application/json");
     });
-
 
     //init server in a thread
     std::thread initServer([&server](){

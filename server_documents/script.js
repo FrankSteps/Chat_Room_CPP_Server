@@ -3,7 +3,7 @@
     developed by: Francisco Passos
     devoleped in: 04/09/2025
 
-    modified in: 05/09/2025
+    modified in: 06/09/2025
 */
 
 //load the Java Script after the HTML is ready
@@ -24,36 +24,42 @@ document.addEventListener("DOMContentLoaded", () => {
     //render chat messages as <div> elements
     const renderMessages = (msgs, user) =>
         msgs.map(m => {
+            const isMine = m.user === user; // compara com o campo user
             const div = document.createElement("div");
-            const isMine = m.text.startsWith(user + ":");
             div.className = isMine ? "my-message chat-bubble" : "other-message chat-bubble";
-    
+
             if (isMine) {
-                div.innerText = m.text.replace(user + ":", "").trim();
+                div.innerText = m.text;
             } else {
                 const container = document.createElement("div");
                 container.style.display = "flex";
                 container.style.alignItems = "flex-start";
                 container.style.gap = "10px";
-    
+
                 const avatar = document.createElement("img");
                 avatar.src = "images/icons/icon_user_purple.png";
                 avatar.alt = "User Avatar";
                 avatar.style.width = "80px";
                 avatar.style.height = "80px";
                 avatar.style.borderRadius = "15%";
-    
+
+                // evento de clique para exibir infos
+                avatar.addEventListener("click", () => {
+                    alert(`User: ${m.user}\nFavorite Color: ${m.color}`);
+                });
+
                 const msgDiv = document.createElement("div");
                 msgDiv.className = "other-message chat-bubble";
-                msgDiv.innerText = m.text;
-    
+                msgDiv.innerText = `${m.user}: 
+                                    ${m.text}`;
+
                 container.appendChild(avatar);
                 container.appendChild(msgDiv);
-    
                 return container;
             }
             return div;
         });
+
 
     //localStorage getters
     const getUser = () => localStorage.getItem("chatUser") || "";
@@ -111,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (hasNewMessages(prevMsgs, newMsgs)) {
             chat.scrollTop = chat.scrollHeight;
         }
-
         //returns the new state (new set of messages)
         return newMsgs;
     };
@@ -121,12 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch("/messages").then(res => res.json());
 
     //sends a message to the server with the given user and message
-    const sendMessage = (user, msg) =>
+    // envia mensagem junto com usuário e cor
+    const sendMessage = (user, msg, color) => 
         fetch("/send", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}`
+            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}&color=${encodeURIComponent(color)}`
         });
+
 
     //initialize user and color: resolve, save, and display
     const initUserAndColor = () => {
@@ -136,13 +143,18 @@ document.addEventListener("DOMContentLoaded", () => {
             displayUsername(user);
             displayDate(getUserDate());
         }
-
-        const color = resolveValue(getColor(), askFavoriteColor);
+    
+        let color = resolveValue(getColor(), askFavoriteColor);
         if (color) {
             setColor(color);
             displayColor(color);
+        } else {
+            // Se ainda não houver cor, força o usuário a digitar
+            color = askFavoriteColor();
+            setColor(color);
+            displayColor(color);
         }
-    };
+    };    
 
     //attach hidden "user" field to the form before submit
     const attachUserToForm = () => {
@@ -169,14 +181,15 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const msg = input.value.trim();
             if (!msg) return;
-            sendMessage(getUser(), msg).then(() => {
+        
+            const color = getColor(); // garante que não está vazio
+            sendMessage(getUser(), msg, color).then(() => {
                 input.value = "";
                 fetchMessages().then(msgs => {
                     currentMessages = displayMessagesFunctional(currentMessages, msgs, getUser());
                 });
             });
-            
-        });
+        });         
     };
     
     //periodically refresh messages from server
