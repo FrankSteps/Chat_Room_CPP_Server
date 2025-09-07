@@ -3,7 +3,7 @@
     developed by: Francisco Passos
     devoleped in: 04/09/2025
 
-    modified in: 06/09/2025
+    modified in: 07/09/2025
 */
 
 //load the Java Script after the HTML is ready
@@ -24,10 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
     //render chat messages as <div> elements
     const renderMessages = (msgs, user) =>
         msgs.map(m => {
-            const isMine = m.user === user; // compara com o campo user
+            const isMine = m.user === user; //isMine === "I am"
             const div = document.createElement("div");
             div.className = isMine ? "my-message chat-bubble" : "other-message chat-bubble";
 
+            //responsible for showing how the message should be loaded depending on who sends it
             if (isMine) {
                 div.innerText = m.text;
             } else {
@@ -43,23 +44,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 avatar.style.height = "80px";
                 avatar.style.borderRadius = "15%";
 
-                // evento de clique para exibir infos
+                //display user information when clickin on the avatar
                 avatar.addEventListener("click", () => {
-                    alert(`User: ${m.user}\nFavorite Color: ${m.color}`);
+                    const since = new Date(m.date * 1000);
+//user information - username - favorite color - first login                  
+alert(`User: ${m.user} 
+Favorite Color: ${m.color}
+Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
                 });
 
+                //message from (another) user
+                //------------->(medium) :o
                 const msgDiv = document.createElement("div");
                 msgDiv.className = "other-message chat-bubble";
-                msgDiv.innerText = `${m.user}: 
-                                    ${m.text}`;
+                msgDiv.innerText = `${m.user}: ${m.text}`;
 
                 container.appendChild(avatar);
                 container.appendChild(msgDiv);
                 return container;
             }
-            return div;
+            return div; //display messages
         });
-
 
     //localStorage getters
     const getUser = () => localStorage.getItem("chatUser") || "";
@@ -125,15 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const fetchMessages = () =>
         fetch("/messages").then(res => res.json());
 
-    //sends a message to the server with the given user and message
-    // envia mensagem junto com usuário e cor
-    const sendMessage = (user, msg, color) => 
+    //sends a message to the server with the given user, message, color, and since
+    const sendMessage = (user, msg, color, since) => 
         fetch("/send", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}&color=${encodeURIComponent(color)}`
+            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}&color=${encodeURIComponent(color)}&date=${encodeURIComponent(since)}`
         });
-
 
     //initialize user and color: resolve, save, and display
     const initUserAndColor = () => {
@@ -149,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
             setColor(color);
             displayColor(color);
         } else {
-            // Se ainda não houver cor, força o usuário a digitar
             color = askFavoriteColor();
             setColor(color);
             displayColor(color);
@@ -172,6 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     //handle chat form submit: send message and refresh chat
+    
+    //handle chat form submit: send message and refresh chat
     const setupChatForm = () => {
         const form = document.querySelector(".chat-form");
         const input = document.querySelector(".chat-input");
@@ -181,9 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const msg = input.value.trim();
             if (!msg) return;
-        
-            const color = getColor(); // garante que não está vazio
-            sendMessage(getUser(), msg, color).then(() => {
+
+            const color = getColor(); 
+            const since = getUserDate(); 
+            sendMessage(getUser(), msg, color, since).then(() => {
                 input.value = "";
                 fetchMessages().then(msgs => {
                     currentMessages = displayMessagesFunctional(currentMessages, msgs, getUser());

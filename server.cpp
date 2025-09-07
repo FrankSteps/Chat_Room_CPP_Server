@@ -5,11 +5,13 @@
 //libraries and c++ programs imports
 #include "shared.h"
 #include "httplib.h"
+#include <iomanip>
 #include <thread>
 #include <vector>
+#include <ctime>
 
 //do you want open window?
-const bool windowOpen = false;
+const bool windowOpen = true;
 
 void hashtag() {
     std::cout << "##########################################################################\n";
@@ -44,6 +46,7 @@ struct infoUser {
     std::string user;
     std::string text;
     std::string color;
+    std::string date;
 };
 
 std::vector<infoUser> messages; 
@@ -63,16 +66,33 @@ int startServer(){
         auto color = req.get_param_value("color");
 
         //show user and your message in the prompt
-        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << '\n';
-        
         //save message
-        //messages.push_back(user + ": " + msg);
-
         infoUser m;
         m.user = user;
         m.text = msg;
         m.color = color;
+
+        bool found = false;
+        for(auto& oldMsg : messages){
+            if(oldMsg.user == user){
+                m.date = oldMsg.date;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            m.date = std::to_string(std::time(nullptr));
+        }
+
         messages.push_back(m);
+
+        //atual hour and atual date 
+        std::time_t t = std::stoll(m.date);
+        std::tm* tm_ptr = std::localtime(&t);
+
+        //to Server from console - "debug"
+        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << " || " << std::put_time(tm_ptr, "%d/%m/%y %H:%M:%S") << '\n';
 
         //return cpp to html
         res.set_content("OK", "text/plain");
@@ -85,7 +105,8 @@ int startServer(){
             json += "{";
             json += "\"user\":\"" + escape_json(messages[i].user) + "\",";
             json += "\"text\":\"" + escape_json(messages[i].text) + "\",";
-            json += "\"color\":\"" + escape_json(messages[i].color) + "\"";
+            json += "\"color\":\"" + escape_json(messages[i].color) + "\",";
+            json += "\"date\":\"" + escape_json(messages[i].date) + "\"";
             json += "}";
             if(i != messages.size()-1) json += ",";
         }
