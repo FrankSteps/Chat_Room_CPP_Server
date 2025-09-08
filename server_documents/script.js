@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.style.gap = "10px";
 
                 const avatar = document.createElement("img");
-                avatar.src = "images/icons/icon_user_purple.png";
+                avatar.src = "images/icons/icon_user_purple.png"; //irei modificar isso posteriormente
                 avatar.alt = "User Avatar";
                 avatar.style.width = "80px";
                 avatar.style.height = "80px";

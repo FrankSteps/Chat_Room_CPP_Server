@@ -2,7 +2,7 @@
     Server developed by: Francisco Passos | Frank Steps
     
     Developed in: 03/09/2025
-    Modified in: 07/09/2025
+    Modified in: 08/09/2025
 
     Learning the httplib library with C++ <3
 

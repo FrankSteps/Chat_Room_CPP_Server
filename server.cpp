@@ -47,6 +47,7 @@ struct infoUser {
     std::string text;
     std::string color;
     std::string date;
+    std::string avatar;
 };
 
 std::vector<infoUser> messages; 
@@ -64,6 +65,8 @@ int startServer(){
         auto user = req.get_param_value("user");
         auto msg = req.get_param_value("message");
         auto color = req.get_param_value("color");
+        auto date = req.get_param_value("date");
+        auto avatar = req.get_param_value("avatar");
 
         //show user and your message in the prompt
         //save message
@@ -71,28 +74,17 @@ int startServer(){
         m.user = user;
         m.text = msg;
         m.color = color;
-
-        bool found = false;
-        for(auto& oldMsg : messages){
-            if(oldMsg.user == user){
-                m.date = oldMsg.date;
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            m.date = std::to_string(std::time(nullptr));
-        }
+        m.date = date;
+        m.avatar = avatar;
 
         messages.push_back(m);
 
-        //atual hour and atual date 
+        //firt moment in user login 
         std::time_t t = std::stoll(m.date);
         std::tm* tm_ptr = std::localtime(&t);
 
         //to Server from console - "debug"
-        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << " || " << std::put_time(tm_ptr, "%d/%m/%y %H:%M:%S") << '\n';
+        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << " || " << "Since" << std::put_time(tm_ptr, "%d/%m/%y %H:%M:%S") << '\n';
 
         //return cpp to html
         res.set_content("OK", "text/plain");
@@ -106,7 +98,8 @@ int startServer(){
             json += "\"user\":\"" + escape_json(messages[i].user) + "\",";
             json += "\"text\":\"" + escape_json(messages[i].text) + "\",";
             json += "\"color\":\"" + escape_json(messages[i].color) + "\",";
-            json += "\"date\":\"" + escape_json(messages[i].date) + "\"";
+            json += "\"date\":\"" + escape_json(messages[i].date) + "\",";
+            json += "\"avatar\":\"" + escape_json(messages[i].date) + "\"";
             json += "}";
             if(i != messages.size()-1) json += ",";
         }
