@@ -3,7 +3,7 @@
     developed by: Francisco Passos
     devoleped in: 04/09/2025
 
-    modified in: 07/09/2025
+    modified in: 09/09/2025
 */
 
 //load the Java Script after the HTML is ready
@@ -15,6 +15,33 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
     };
 
+    // available avatar color options
+    const options = ["aqua-green", "black", "orange", "pink", "purple", "red", "blue", "white"];
+    
+    //fallback if choice is invalid
+    const defaultChoice = "aqua-green";
+
+    //check if choice is valid
+    const isValidChoice = (choice) =>
+    choice && options.includes(choice.toLowerCase());
+
+    //alert result of choice or fallback
+    const showResult = (choice) =>
+    alert(
+        isValidChoice(choice)
+            ? `You chose the avatar: ${choice}`
+            : `Invalid option. Using default avatar (${defaultChoice}).`
+    );
+
+    //update avatar image and save in localStorage
+    const updateAvatarImage = (choice) => {
+        const img = document.getElementById("avatarImg");
+        const validChoice = isValidChoice(choice) ? choice : defaultChoice;
+        img.src = `images/icons/icon_user_${validChoice}.png`;
+    
+        setAvatar(`images/icons/icon_user_${validChoice}.png`);
+    };   
+
     //return existing value or call fallback function
     const resolveValue = (existing, askFn) => existing || askFn();
 
@@ -24,11 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
     //render chat messages as <div> elements
     const renderMessages = (msgs, user) =>
         msgs.map(m => {
-            const isMine = m.user === user; //isMine === "I am"
+            const isMine = m.user === user; 
             const div = document.createElement("div");
             div.className = isMine ? "my-message chat-bubble" : "other-message chat-bubble";
-
-            //responsible for showing how the message should be loaded depending on who sends it
+    
             if (isMine) {
                 div.innerText = m.text;
             } else {
@@ -36,49 +62,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.style.display = "flex";
                 container.style.alignItems = "flex-start";
                 container.style.gap = "10px";
-
+    
                 const avatar = document.createElement("img");
-                avatar.src = "images/icons/icon_user_purple.png"; //irei modificar isso posteriormente
+                avatar.src = m.avatar || "images/icons/icon_user_purple.png";
                 avatar.alt = "User Avatar";
                 avatar.style.width = "80px";
                 avatar.style.height = "80px";
                 avatar.style.borderRadius = "15%";
-
-                //display user information when clickin on the avatar
+    
                 avatar.addEventListener("click", () => {
-                    const since = new Date(m.date * 1000);
-//user information - username - favorite color - first login                  
-alert(`User: ${m.user} 
+                    const since = new Date(m.date); 
+                    alert(`User: ${m.user} 
 Favorite Color: ${m.color}
 Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
                 });
-
-                //message from (another) user
-                //------------->(medium) :o
+    
+                //create message bubble for other user
                 const msgDiv = document.createElement("div");
                 msgDiv.className = "other-message chat-bubble";
-                msgDiv.innerText = `${m.user}: ${m.text}`;
+                msgDiv.innerText = `${m.user}: 
+                                    ${m.text}`;
 
+                // add avatar + message to container
                 container.appendChild(avatar);
                 container.appendChild(msgDiv);
                 return container;
             }
-            return div; //display messages
+            return div;
         });
-
+    
+    
     //localStorage getters
-    const getUser = () => localStorage.getItem("chatUser") || "";
-    const getColor = () => localStorage.getItem("favoriteColor") || "";
-    const getUserDate = () => localStorage.getItem("chatUserDate") || "";
+    const getUser = () => localStorage.getItem("chatUser") || ""; //username
+    const getColor = () => localStorage.getItem("favoriteColor") || ""; //favorite color 
+    const getUserDate = () => localStorage.getItem("chatUserDate") || ""; //date
+    const getAvatar = () => localStorage.getItem("chatAvatar") || ""; //avatar
 
     //localStorage setters
-    const setUser = (user) => {
+    const setUser = (user) => { //username
         localStorage.setItem("chatUser", user);
         if (!localStorage.getItem("chatUserDate")) {
             localStorage.setItem("chatUserDate", new Date().toISOString());
         }
     };
-    const setColor = (color) => localStorage.setItem("favoriteColor", color);
+    const setColor = (color) => localStorage.setItem("favoriteColor", color); //favorite color
+    const setAvatar = (avatar) => localStorage.setItem("chatAvatar", avatar); //avatar
 
     //ask user for input (impure: prompt)
     const askUsername = () => prompt("Your username: ");
@@ -130,13 +158,14 @@ Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
     const fetchMessages = () =>
         fetch("/messages").then(res => res.json());
 
-    //sends a message to the server with the given user, message, color, and since
+    //sends a message to the server with the given user, message, color, since and avatar choose
     const sendMessage = (user, msg, color, since) => 
         fetch("/send", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}&color=${encodeURIComponent(color)}&date=${encodeURIComponent(since)}`
+            body: `user=${encodeURIComponent(user)}&message=${encodeURIComponent(msg)}&color=${encodeURIComponent(color)}&date=${encodeURIComponent(since)}&avatar=${encodeURIComponent(getAvatar())}`
         });
+    
 
     //initialize user and color: resolve, save, and display
     const initUserAndColor = () => {
@@ -156,7 +185,20 @@ Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
             setColor(color);
             displayColor(color);
         }
-    };    
+    };  
+    
+    //initialize avatar user: resolve, save and display
+    const initAvatar = () => {
+        const savedAvatar = getAvatar();
+        if (savedAvatar) {
+            const choice = savedAvatar.split("icon_user_")[1].replace(".png", "");
+            document.getElementById("avatarChoice").value = choice;
+            updateAvatarImage(choice);
+        } else {
+            updateAvatarImage(defaultChoice);
+        }
+    };
+    
 
     //attach hidden "user" field to the form before submit
     const attachUserToForm = () => {
@@ -172,8 +214,6 @@ Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
             form.appendChild(input);
         });
     };
-
-    //handle chat form submit: send message and refresh chat
     
     //handle chat form submit: send message and refresh chat
     const setupChatForm = () => {
@@ -196,7 +236,14 @@ Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
             });
         });         
     };
-    
+
+    const select = document.getElementById("avatarChoice");
+    if (select) {
+        select.addEventListener("change", (e) => {
+            updateAvatarImage(e.target.value);
+    });
+}
+
     //periodically refresh messages from server
     const startMessageUpdater = () => {
         setInterval(() => {
@@ -209,6 +256,7 @@ Since: ${since.toLocaleString("default", { month: "long", year: "numeric" })}`);
 
     //start
     initUserAndColor();
+    initAvatar();
     attachUserToForm();
     setupChatForm();
     startMessageUpdater();

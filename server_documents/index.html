@@ -8,11 +8,25 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="avatar-selector">
+    <label for="avatarChoice">Choose your avatar:</label>
+    <select id="avatarChoice">
+      <option value="">-- Select --</option>
+      <option value="aqua-green">Aqua Green</option>
+      <option value="black">Black</option>
+      <option value="orange">Orange</option>
+      <option value="pink">Pink</option>
+      <option value="purple">Purple</option>
+      <option value="red">Red</option>
+      <option value="blue">blue</option>
+      <option value="white">white</option>
+    </select>
+  </div>  
   <div class="app">
     <header class="yourProfile">
       <div class="avatar">
-        <img src="images/icons/icon_user.png" alt="User avatar"> //irei modificar aqui posteriormente
-      </div>
+        <img id="avatarImg" src="images/icons/icon_user_aqua-green.png" alt="User avatar">
+      </div>      
       <div class="profile-info">
         <h1 id="username"></h1>
         <p>Since: <span id="date"></span></p>

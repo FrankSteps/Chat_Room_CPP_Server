@@ -84,7 +84,8 @@ int startServer(){
         std::tm* tm_ptr = std::localtime(&t);
 
         //to Server from console - "debug"
-        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << " || " << "Since" << std::put_time(tm_ptr, "%d/%m/%y %H:%M:%S") << '\n';
+        std::cout << "user: " << user << " || " << "message: " << msg << " || " << "favColor: " << color << '\n';
+        std::cout << "Since" << std::put_time(tm_ptr, "%d/%m/%y %H:%M:%S") << " || " << "avatar: " << avatar << '\n';
 
         //return cpp to html
         res.set_content("OK", "text/plain");
@@ -99,7 +100,7 @@ int startServer(){
             json += "\"text\":\"" + escape_json(messages[i].text) + "\",";
             json += "\"color\":\"" + escape_json(messages[i].color) + "\",";
             json += "\"date\":\"" + escape_json(messages[i].date) + "\",";
-            json += "\"avatar\":\"" + escape_json(messages[i].date) + "\"";
+            json += "\"avatar\":\"" + escape_json(messages[i].avatar) + "\"";
             json += "}";
             if(i != messages.size()-1) json += ",";
         }

@@ -1,5 +1,7 @@
 /*
-    This program will be a Chat
+    This program will be a Chat app
+
+    Chat UP!
 */
 
 #include "shared.h"
