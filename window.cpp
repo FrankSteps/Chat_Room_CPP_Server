@@ -24,8 +24,8 @@ void startWindow(){
         int y = 20;
         ray::DrawText("The local IP of this computer is:", 20, y, 20, ray::LIGHTGRAY); y += 30;
         ray::DrawText(localIP.c_str(), 20, y, 20, ray::LIGHTGRAY); y += 30;
-        ray::DrawText("Access from your computer using: http://localhost:8080", 20, y, 20, ray::LIGHTGRAY); y += 30;
-        ray::DrawText(("Access from another device using: http://" + localIP + ":8080").c_str(), 20, y, 20, ray::LIGHTGRAY); y += 30;
+        ray::DrawText("Access from your computer using: http://localhost:3000", 20, y, 20, ray::LIGHTGRAY); y += 30;
+        ray::DrawText(("Access from another device using: http://" + localIP + ":3000").c_str(), 20, y, 20, ray::LIGHTGRAY); y += 30;
         ray::DrawText("Press Ctrl+C to stop.", 20, y, 20, ray::LIGHTGRAY);
         ray::EndDrawing();
     }

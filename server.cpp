@@ -22,13 +22,34 @@ std::string escape_json(const std::string& s) {
     std::string out;
     for (char c : s) {
         switch (c) {
-            case '\"': out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\b': out += "\\b"; break;
-            case '\f': out += "\\f"; break;
-            case '\n': out += "\\n"; break;
-            case '\r': out += "\\r"; break;
-            case '\t': out += "\\t"; break;
+            case '\"': 
+                out += "\\\""; 
+            break;
+
+            case '\\': 
+                out += "\\\\"; 
+            break;
+
+            case '\b': 
+                out += "\\b"; 
+            break;
+
+            case '\f': 
+                out += "\\f"; 
+            break;
+
+            case '\n': 
+                out += "\\n"; 
+            break;
+
+            case '\r': 
+                out += "\\r"; 
+            break;
+            
+            case '\t': 
+                out += "\\t"; 
+            break;
+
             default:
                 if (c >= 0 && c <= 0x1F) {
                     char buf[7];
@@ -110,7 +131,7 @@ int startServer(){
 
     //init server in a thread
     std::thread initServer([&server](){
-        server.listen("0.0.0.0", 8080);
+        server.listen("0.0.0.0", 3000);
     });
 
     if (windowOpen) {          
@@ -124,8 +145,8 @@ int startServer(){
     //messages indicating server operation
     hashtag();
     std::cout << "The local IP of this computer is: " << ip_local() << '\n';
-    std::cout << "access from your computer using: http://localhost:8080\n";
-    std::cout << "access from another device using: http://" << ip_local() << ":8080\n";
+    std::cout << "access from your computer using: http://localhost:3000\n";
+    std::cout << "access from another device using: http://" << ip_local() << ":3000\n";
 
     return EXIT_SUCCESS;
 }

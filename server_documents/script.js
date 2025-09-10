@@ -8,6 +8,7 @@
 
 //load the Java Script after the HTML is ready
 document.addEventListener("DOMContentLoaded", () => {
+    
     // Format ISO date -> "Month Year"
     const formatMonthYear = (isoDate) => {
         if (!isoDate) return "";
